@@ -36,21 +36,16 @@ func Unmarshal[E any](asciiTable string, v E) ([]string, []E, error) {
 		// Map header to struct fields
 		elem := reflect.New(elemType).Elem()
 		for i, header := range headers {
-			fieldFound := false
 			for j := 0; j < elem.NumField(); j++ {
 				field := elemType.Field(j)
 				tag := field.Tag.Get("asciitable")
 				if tag == header {
-					fieldFound = true
 					value := row[i]
 					err := setFieldValue(elem.Field(j), value)
 					if err != nil {
 						return nil, nil, fmt.Errorf("failed to set value for field '%s': %v", field.Name, err)
 					}
 				}
-			}
-			if !fieldFound {
-				return nil, nil, fmt.Errorf("header '%s' does not match any struct fields", header)
 			}
 		}
 
@@ -77,8 +72,12 @@ func setFieldValue(field reflect.Value, value string) error {
 	}
 
 	switch field.Kind() {
-	case reflect.String:
-		field.SetString(value)
+	case reflect.Bool:
+		boolVal, err := strconv.ParseBool(value)
+		if err != nil {
+			return err
+		}
+		field.SetBool(boolVal)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		intVal, err := strconv.Atoi(value)
 		if err != nil {
@@ -91,6 +90,8 @@ func setFieldValue(field reflect.Value, value string) error {
 			return err
 		}
 		field.SetFloat(floatVal)
+	case reflect.String:
+		field.SetString(value)
 	default:
 		return fmt.Errorf("unsupported field type: %s", field.Kind())
 	}
