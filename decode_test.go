@@ -29,3 +29,28 @@ func TestDecodeNameAgeScore(t *testing.T) {
 	}
 	require.Equal(t, expected, results)
 }
+
+type normalData struct {
+	Bool    bool    `asciitable:"Bool"`
+	Float32 float32 `asciitable:"Float32"`
+	Float64 float64 `asciitable:"Float64"`
+}
+
+func TestDecodeNormalData(t *testing.T) {
+	bytes, err := os.ReadFile("decode_normal.txt")
+	require.NoError(t, err)
+
+	table := string(bytes)
+	headers, results, err := Unmarshal(table, normalData{})
+	require.NoError(t, err)
+
+	require.Equal(t, []string{"Bool", "Float32", "Float64"}, headers)
+
+	expected := []normalData{
+		{Bool: true, Float32: 24.5, Float64: 89.123},
+		{Bool: true, Float32: 19.3, Float64: 72.001},
+		{Bool: false, Float32: 19.3, Float64: 72.001},
+		{Bool: false, Float32: 22.7, Float64: 95.5},
+	}
+	require.Equal(t, expected, results)
+}
