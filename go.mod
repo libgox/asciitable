@@ -1,4 +1,4 @@
-module asciitable
+module github.com/libgox/asciitable
 
 go 1.18
 
