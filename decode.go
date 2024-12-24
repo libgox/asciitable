@@ -10,14 +10,33 @@ import (
 
 // Unmarshal parses an ASCII table into a slice of the specified type.
 func Unmarshal[E any](asciiTable string, v E) ([]string, []E, error) {
+	var delimitter = "*+|"
+	var skip = []string{"---"}
 	lines := strings.Split(strings.TrimSpace(asciiTable), "\n")
 	if len(lines) < 4 {
 		return nil, nil, errors.New("invalid ascii table format, must have at least 4 lines")
 	}
 
-	// Extract headers
-	headerLine := strings.Trim(lines[1], "| ")
-	headers := splitRow(headerLine)
+	// Look for headers in the first 10 lines
+	var headers []string
+	var headerLineNumber int
+
+	var defaultLines = 10
+	if len(lines) < defaultLines {
+		defaultLines = len(lines) - 1
+	}
+
+	for i, line := range lines[0:defaultLines] {
+		headerLine := strings.Trim(line, delimitter+" ")
+		if skipLine(headerLine, skip) {
+			continue
+		}
+		headers = splitRow(headerLine, delimitter)
+		if len(headers) > 1 {
+			headerLineNumber = i
+			break
+		}
+	}
 
 	// Reflect on the type of E
 	var results []E
@@ -27,8 +46,12 @@ func Unmarshal[E any](asciiTable string, v E) ([]string, []E, error) {
 	}
 
 	// Process rows
-	for _, line := range lines[3 : len(lines)-1] { // Skip header and separator line
-		row := splitRow(strings.Trim(line, "| "))
+	for _, line := range lines[headerLineNumber+1 : len(lines)-1] { // Begin after header
+		if skipLine(line, skip) {
+			continue
+		}
+
+		row := splitRow(strings.Trim(line, delimitter+" "), delimitter)
 		if len(row) != len(headers) {
 			return nil, nil, fmt.Errorf("row length does not match header length: %v", row)
 		}
@@ -56,11 +79,17 @@ func Unmarshal[E any](asciiTable string, v E) ([]string, []E, error) {
 	return headers, results, nil
 }
 
-// Helper function to split a row by `|` and trim whitespace
-func splitRow(row string) []string {
-	cells := strings.Split(row, "|")
-	for i := range cells {
-		cells[i] = strings.TrimSpace(cells[i])
+// Helper function to split a row by the first character in the delimitter string and trim whitespace.
+func splitRow(row string, delimitter string) []string {
+	var cells []string
+	for _, char := range strings.Split(delimitter, "") {
+		cells = strings.Split(row, char)
+		for i := range cells {
+			cells[i] = strings.TrimSpace(cells[i])
+		}
+		if len(cells) > 1 {
+			break
+		}
 	}
 	return cells
 }
@@ -97,4 +126,14 @@ func setFieldValue(field reflect.Value, value string) error {
 	}
 
 	return nil
+}
+
+// Return `true` if any string in the skip slice is in the line.
+func skipLine(line string, skip []string) bool {
+	for _, s := range skip {
+		if strings.Contains(line, s) {
+			return true
+		}
+	}
+	return false
 }
