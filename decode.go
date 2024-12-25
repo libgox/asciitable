@@ -10,7 +10,7 @@ import (
 
 // Unmarshal parses an ASCII table into a slice of the specified type.
 func Unmarshal[E any](asciiTable string, v E) ([]string, []E, error) {
-	var delimitter = "*+|"
+	var delimiter = "*+|"
 	var skip = []string{"---"}
 	lines := strings.Split(strings.TrimSpace(asciiTable), "\n")
 	if len(lines) < 4 {
@@ -27,11 +27,11 @@ func Unmarshal[E any](asciiTable string, v E) ([]string, []E, error) {
 	}
 
 	for i, line := range lines[0:defaultLines] {
-		headerLine := strings.Trim(line, delimitter+" ")
+		headerLine := strings.Trim(line, delimiter+" ")
 		if skipLine(headerLine, skip) {
 			continue
 		}
-		headers = splitRow(headerLine, delimitter)
+		headers = splitRow(headerLine, delimiter)
 		if len(headers) > 1 {
 			headerLineNumber = i
 			break
@@ -51,7 +51,7 @@ func Unmarshal[E any](asciiTable string, v E) ([]string, []E, error) {
 			continue
 		}
 
-		row := splitRow(strings.Trim(line, delimitter+" "), delimitter)
+		row := splitRow(strings.Trim(line, delimiter+" "), delimiter)
 		if len(row) != len(headers) {
 			return nil, nil, fmt.Errorf("row length does not match header length: %v", row)
 		}
@@ -79,10 +79,10 @@ func Unmarshal[E any](asciiTable string, v E) ([]string, []E, error) {
 	return headers, results, nil
 }
 
-// Helper function to split a row by the first character in the delimitter string and trim whitespace.
-func splitRow(row string, delimitter string) []string {
+// Helper function to split a row by the first character in the delimiter string and trim whitespace.
+func splitRow(row string, delimiter string) []string {
 	var cells []string
-	for _, char := range strings.Split(delimitter, "") {
+	for _, char := range strings.Split(delimiter, "") {
 		cells = strings.Split(row, char)
 		for i := range cells {
 			cells[i] = strings.TrimSpace(cells[i])
