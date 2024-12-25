@@ -74,11 +74,11 @@ func TestDecodeGridData(t *testing.T) {
 	require.Equal(t, []string{"param_name", "rom1", "rom2", "rom3"}, headers)
 
 	expected := []gridData{
-		{Name:"chip_tech", ROM1:"CB", ROM2:"EB", ROM3:"PB"},
-		{Name:"default_v", ROM1:"14000", ROM2:"14000", ROM3:"14000"},
-		{Name:"default_clk", ROM1:"490", ROM2:"490", ROM3:"490"},
-		{Name:"warmup_temp", ROM1:"41", ROM2:"41", ROM3:"45"},
-		{Name:"cooldown_temp", ROM1:"56", ROM2:"59", ROM3:"62"},
+		{Name: "chip_tech", ROM1: "CB", ROM2: "EB", ROM3: "PB"},
+		{Name: "default_v", ROM1: "14000", ROM2: "14000", ROM3: "14000"},
+		{Name: "default_clk", ROM1: "490", ROM2: "490", ROM3: "490"},
+		{Name: "warmup_temp", ROM1: "41", ROM2: "41", ROM3: "45"},
+		{Name: "cooldown_temp", ROM1: "56", ROM2: "59", ROM3: "62"},
 	}
 	require.Equal(t, expected, results)
 }
